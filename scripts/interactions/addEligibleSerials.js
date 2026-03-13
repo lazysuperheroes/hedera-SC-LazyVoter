@@ -39,6 +39,7 @@ const readlineSync = require('readline-sync');
 const { getArgFlag, getArg, sleep } = require('../../utils/nodeHelpers');
 const { contractExecuteFunction, readOnlyEVMFromMirrorNode } = require('../../utils/solidityHelpers');
 const { getSerialsOwned, getTokenDetails } = require('../../utils/hederaMirrorHelpers');
+const { parseSerials } = require('../../lib/serialParser');
 
 // Get operator from .env file
 let operatorKey;
@@ -62,7 +63,7 @@ const main = async () => {
 	// Check for help flag
 	if (getArgFlag('-h') || getArgFlag('--help')) {
 		console.log('Usage: addEligibleSerials.js <serials> [options]');
-		console.log('  <serials>: Comma-separated list of NFT serial numbers (e.g., 1,2,3,4,5)');
+		console.log('  <serials>: Serial numbers (e.g., 1,2,3,4,5 or 1-5 or 1-3,7,10-12)');
 		console.log('');
 		console.log('Options:');
 		console.log('  --fetch-owned: Fetch all NFT serials owned by the operator account');
@@ -78,6 +79,8 @@ const main = async () => {
 		console.log('');
 		console.log('Examples:');
 		console.log('  node scripts/interactions/addEligibleSerials.js 1,2,3,4,5');
+		console.log('  node scripts/interactions/addEligibleSerials.js 1-10');
+		console.log('  node scripts/interactions/addEligibleSerials.js 1-5,10,15-20');
 		console.log('  node scripts/interactions/addEligibleSerials.js --fetch-owned');
 		console.log('  node scripts/interactions/addEligibleSerials.js --fetch-token');
 		console.log('  node scripts/interactions/addEligibleSerials.js --fetch-token --range 1-100');
@@ -260,21 +263,22 @@ const main = async () => {
 	else {
 		// Manual serial input mode
 		if (args.length !== 1) {
-			console.log('❌ Error: Manual mode requires exactly one argument with comma-separated serials');
-			console.log('   Example: node scripts/interactions/addEligibleSerials.js 1,2,3,4,5');
+			console.log('❌ Error: Manual mode requires exactly one argument with serials');
+			console.log('   Examples: 1,2,3,4,5  or  1-10  or  1-5,10,15-20');
 			process.exit(1);
 		}
 
-		// Parse serials from command line
+		// Parse serials from command line using the serialParser utility
 		const serialsStr = args[0];
-		serials = serialsStr.split(',').map(s => {
-			const num = parseInt(s.trim());
-			if (isNaN(num) || num < 1) {
-				console.log('❌ Error: Invalid serial number:', s.trim());
-				process.exit(1);
-			}
-			return num;
-		});
+		try {
+			serials = parseSerials(serialsStr);
+			console.log(`✅ Parsed ${serials.length} serial(s) from input: ${serialsStr}`);
+		}
+		catch (error) {
+			console.log('❌ Error parsing serials:', error.message);
+			console.log('   Examples: 1,2,3,4,5  or  1-10  or  1-5,10,15-20');
+			process.exit(1);
+		}
 
 		if (serials.length === 0) {
 			console.log('❌ Error: No valid serials provided');
