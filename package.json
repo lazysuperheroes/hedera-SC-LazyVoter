@@ -19,6 +19,14 @@
   "keywords": ["hedera", "voting", "nft", "governance", "delegation", "hts", "smart-contract"],
   "author": "Lazy Superheroes",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lazysuperheroes/hedera-SC-LazyVoter.git"
+  },
+  "homepage": "https://github.com/lazysuperheroes/hedera-SC-LazyVoter#readme",
+  "bugs": {
+    "url": "https://github.com/lazysuperheroes/hedera-SC-LazyVoter/issues"
+  },
   "engines": {
     "node": ">=18"
   },
